@@ -614,8 +614,8 @@
       try {
         parsed = JSON.parse(raw);
       } catch (error) {
-        console.warn('Dados locais inválidos foram removidos.', error);
         localStorage.removeItem(STORAGE_KEY);
+        console.warn('Dados locais inválidos foram removidos.', error);
         return;
       }
       var elements = getStateElements();
@@ -744,11 +744,10 @@
         inputs.forEach(function (input, dayIndex) {
           var key = 'routine-' + rowIndex + '-' + dayIndex;
           input.dataset.checkboxKey = key;
-          var id = 'routine-' + rowIndex + '-' + dayIndex;
-          input.id = id;
+          input.id = key;
           var srLabel = document.createElement('label');
           srLabel.className = 'sr-only';
-          srLabel.setAttribute('for', id);
+          srLabel.setAttribute('for', key);
           srLabel.textContent = activity + ' - ' + dayHeaders[dayIndex];
           input.parentElement.appendChild(srLabel);
         });
