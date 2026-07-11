@@ -62,6 +62,12 @@
     opacity:.85;
     margin:0;
   }
+  .privacy-note{
+    margin:8px auto 0;
+    max-width:620px;
+    font-size:12px;
+    color:var(--muted);
+  }
 
   /* Rosary divider — signature element */
   .rosary{
@@ -175,6 +181,10 @@
     transition:.15s;
   }
   .chip:hover{border-color:var(--gold);}
+  .chip:focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:2px;
+  }
   .chip.on{
     background:var(--navy);
     border-color:var(--navy);
@@ -188,6 +198,10 @@
     width:160px;
   }
   .chip-other:focus{outline:none;border-color:var(--gold);}
+  .chip-other:focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:2px;
+  }
 
   /* ---------- Weekly grid ---------- */
   .grid-wrap{overflow-x:auto;}
@@ -227,6 +241,43 @@
     width:17px;height:17px;
     accent-color:var(--wine);
     cursor:pointer;
+  }
+
+  .week-cards{
+    display:none;
+    gap:12px;
+  }
+  .week-card{
+    border:1px solid var(--gold-light);
+    border-radius:3px;
+    padding:12px;
+    background:var(--paper);
+  }
+  .week-card h3{
+    margin:0 0 10px;
+    font-family:'Cormorant Garamond',serif;
+    font-size:21px;
+    color:var(--navy);
+  }
+  .week-card-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:grid;
+    gap:8px;
+  }
+  .week-card-list li{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    font-size:14px;
+  }
+  .week-card-list input{
+    margin-top:2px;
+    width:16px;
+    height:16px;
+    accent-color:var(--wine);
+    flex-shrink:0;
   }
 
   /* ---------- Exame de consciência ---------- */
@@ -283,7 +334,7 @@
 
   /* ---------- Print button ---------- */
   .print-btn-wrap{text-align:center;margin-bottom:30px;}
-  #printBtn{
+  .action-btn{
     background:var(--wine);
     color:var(--paper);
     border:none;
@@ -295,19 +346,84 @@
     letter-spacing:.03em;
     cursor:pointer;
   }
-  #printBtn:hover{background:#5a2222;}
+  .action-btn:hover{background:#5a2222;}
+  .action-btn:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:2px;
+  }
+  #clearBtn{
+    background:transparent;
+    border:1px solid var(--gold-light);
+    color:var(--wine);
+    margin-left:8px;
+  }
+  #clearBtn:hover{
+    border-color:var(--wine);
+    background:rgba(110,42,42,.06);
+  }
+  .sr-only{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+  .virtue-tooltip{
+    position:fixed;
+    z-index:20;
+    max-width:290px;
+    background:var(--navy);
+    color:var(--paper);
+    border:1px solid var(--gold-light);
+    border-radius:6px;
+    padding:10px 12px;
+    font-size:12.5px;
+    line-height:1.45;
+    box-shadow:0 10px 20px rgba(30,42,71,.2);
+    opacity:0;
+    transform:translateY(6px);
+    pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .virtue-tooltip.show{
+    opacity:1;
+    transform:translateY(0);
+  }
 
   @media print{
     body{padding:0;background:#fff;}
-    #printBtn, .print-btn-wrap{display:none;}
+    .print-btn-wrap{display:none;}
     section.card{break-inside:avoid;border-color:#ccc;}
     .prayer{background:#1E2A47 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
     table.week thead th{background:#1E2A47 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
   }
 
+  @media (max-width:900px){
+    .meta{justify-content:flex-start;}
+  }
+
+  @media (max-width:700px){
+    .grid-wrap{display:none;}
+    .week-cards{display:grid;}
+    .print-btn-wrap{
+      display:flex;
+      justify-content:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    #clearBtn{margin-left:0;}
+  }
+
   @media (max-width:600px){
     h1{font-size:34px;}
     section.card{padding:18px 16px;}
+    .privacy-note{font-size:11.5px;}
   }
 </style>
 </head>
@@ -318,6 +434,7 @@
     <div class="eyebrow">Preparação para a Crisma</div>
     <h1>Regra de Vida da Semana</h1>
     <p class="subtitle">O cristão preparado para a prática dos seus deveres</p>
+    <p class="privacy-note">Seus dados permanecem armazenados apenas neste navegador e neste dispositivo. Nenhuma informação é enviada para a internet.</p>
   </header>
 
   <div class="rosary" aria-hidden="true">
@@ -329,16 +446,17 @@
   </div>
 
   <div class="meta">
-    <div><label>Nome:</label><input type="text" placeholder="seu nome"></div>
-    <div><label>Semana de:</label><input type="text" placeholder="dd/mm" style="width:70px;"></div>
-    <div><label>até:</label><input type="text" placeholder="dd/mm" style="width:70px;"></div>
+    <div><label for="nameInput">Nome:</label><input id="nameInput" type="text" placeholder="seu nome" autocomplete="name"></div>
+    <div><label for="weekStartInput">Semana de:</label><input id="weekStartInput" type="text" placeholder="dd/mm" style="width:70px;"></div>
+    <div><label for="weekEndInput">até:</label><input id="weekEndInput" type="text" placeholder="dd/mm" style="width:70px;"></div>
   </div>
 
   <!-- INTENÇÃO -->
   <section class="card">
     <h2 class="card-title"><span class="card-num">01</span> Minha intenção da semana</h2>
     <p class="card-hint">"Senhor, que eu faça isto pela salvação e pelo bem real das pessoas." Escreva por quem ou por quê você quer oferecer seus dias.</p>
-    <textarea placeholder="Ex: Ofereço esta semana pela saúde da minha avó, e para ter mais paciência com meu irmão..."></textarea>
+    <label for="intentionInput" class="sr-only">Intenção da semana</label>
+    <textarea id="intentionInput" placeholder="Ex: Ofereço esta semana pela saúde da minha avó, e para ter mais paciência com meu irmão..."></textarea>
   </section>
 
   <!-- VIRTUDE -->
@@ -346,14 +464,15 @@
     <h2 class="card-title"><span class="card-num">02</span> Virtude que vou praticar</h2>
     <p class="card-hint">Escolha uma virtude para ser o foco da semana — ou escreva a sua.</p>
     <div class="chips" id="virtueChips">
-      <button type="button" class="chip">Paciência</button>
-      <button type="button" class="chip">Justiça</button>
-      <button type="button" class="chip">Verdade</button>
-      <button type="button" class="chip">Pureza</button>
-      <button type="button" class="chip">Mansidão</button>
-      <button type="button" class="chip">Temperança</button>
-      <button type="button" class="chip">Caridade</button>
-      <input type="text" class="chip chip-other" placeholder="outra...">
+      <button type="button" class="chip" data-virtue="Paciência">Paciência</button>
+      <button type="button" class="chip" data-virtue="Justiça">Justiça</button>
+      <button type="button" class="chip" data-virtue="Verdade">Verdade</button>
+      <button type="button" class="chip" data-virtue="Pureza">Pureza</button>
+      <button type="button" class="chip" data-virtue="Mansidão">Mansidão</button>
+      <button type="button" class="chip" data-virtue="Temperança">Temperança</button>
+      <button type="button" class="chip" data-virtue="Caridade">Caridade</button>
+      <label for="otherVirtueInput" class="sr-only">Outra virtude</label>
+      <input id="otherVirtueInput" type="text" class="chip-other" placeholder="outra...">
     </div>
   </section>
 
@@ -362,42 +481,43 @@
     <h2 class="card-title"><span class="card-num">03</span> Rotina de oração e recolhimento</h2>
     <p class="card-hint">Marque cada momento vivido durante o dia — nem que seja breve, o importante é a constância.</p>
     <div class="grid-wrap">
-      <table class="week">
+      <table class="week" aria-label="Rotina semanal">
         <thead>
           <tr>
             <th class="corner"></th>
-            <th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th><th>Dom</th>
+            <th scope="col">Seg</th><th scope="col">Ter</th><th scope="col">Qua</th><th scope="col">Qui</th><th scope="col">Sex</th><th scope="col">Sáb</th><th scope="col">Dom</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <th>Oração da manhã</th>
+            <th scope="row">Oração da manhã</th>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
           </tr>
           <tr>
-            <th>Missa ou leitura espiritual</th>
+            <th scope="row">Missa ou leitura espiritual</th>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
           </tr>
           <tr>
-            <th>Terço</th>
+            <th scope="row">Terço</th>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
           </tr>
           <tr>
-            <th>Exame de consciência (noite)</th>
+            <th scope="row">Exame de consciência (noite)</th>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
           </tr>
           <tr>
-            <th>Um gesto de caridade concreta</th>
+            <th scope="row">Um gesto de caridade concreta</th>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
             <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
           </tr>
         </tbody>
       </table>
     </div>
+    <div id="weekCards" class="week-cards" aria-live="polite"></div>
   </section>
 
   <!-- EXAME DE CONSCIÊNCIA -->
@@ -405,11 +525,11 @@
     <h2 class="card-title"><span class="card-num">04</span> Perguntas para o exame de consciência à noite</h2>
     <p class="card-hint">Antes de dormir, revise rapidamente o dia com estas perguntas.</p>
     <ul class="exame-list">
-      <li><input type="checkbox"><span>Cumpri o que era justo antes do que era apenas conveniente para mim?</span></li>
-      <li><input type="checkbox"><span>Tive paciência com quem convive comigo, mesmo quando foi difícil?</span></li>
-      <li><input type="checkbox"><span>Fiz algo, por menor que fosse, pelo bem real de alguém?</span></li>
-      <li><input type="checkbox"><span>Reservei um momento — mesmo curto — para orar e voltar a Deus?</span></li>
-      <li><input type="checkbox"><span>Pratiquei a virtude que escolhi para esta semana?</span></li>
+      <li><input id="exam-1" type="checkbox"><label for="exam-1">Cumpri o que era justo antes do que era apenas conveniente para mim?</label></li>
+      <li><input id="exam-2" type="checkbox"><label for="exam-2">Tive paciência com quem convive comigo, mesmo quando foi difícil?</label></li>
+      <li><input id="exam-3" type="checkbox"><label for="exam-3">Fiz algo, por menor que fosse, pelo bem real de alguém?</label></li>
+      <li><input id="exam-4" type="checkbox"><label for="exam-4">Reservei um momento — mesmo curto — para orar e voltar a Deus?</label></li>
+      <li><input id="exam-5" type="checkbox"><label for="exam-5">Pratiquei a virtude que escolhi para esta semana?</label></li>
     </ul>
   </section>
 
@@ -428,18 +548,270 @@
   <div class="motto">"Dai-me as almas, e tomai todo o resto." — São João Bosco</div>
 
   <div class="print-btn-wrap">
-    <button id="printBtn" onclick="window.print()">Imprimir meu plano</button>
+    <button id="printBtn" class="action-btn" type="button" onclick="window.print()">Imprimir meu plano</button>
+    <button id="clearBtn" class="action-btn" type="button">Limpar plano</button>
   </div>
 
 </div>
 
 <script>
-  document.querySelectorAll('#virtueChips .chip').forEach(function(chip){
-    chip.addEventListener('click', function(){
-      document.querySelectorAll('#virtueChips .chip').forEach(function(c){ c.classList.remove('on'); });
-      chip.classList.add('on');
-    });
-  });
+  (function () {
+    var STORAGE_KEY = 'crismaWeekPlanData';
+    var TOOLTIP_DELAY_MS = 450;
+    var TOOLTIP_MARGIN_PX = 10;
+    var tooltipTimeout = null;
+
+    function getStateElements() {
+      return {
+        name: document.getElementById('nameInput'),
+        weekStart: document.getElementById('weekStartInput'),
+        weekEnd: document.getElementById('weekEndInput'),
+        intention: document.getElementById('intentionInput'),
+        otherVirtue: document.getElementById('otherVirtueInput')
+      };
+    }
+
+    function saveCheckboxes() {
+      var checkboxState = {};
+      document.querySelectorAll('[data-checkbox-key]').forEach(function (checkbox) {
+        checkboxState[checkbox.dataset.checkboxKey] = checkbox.checked;
+      });
+      return checkboxState;
+    }
+
+    function restoreCheckboxes(checkboxState) {
+      if (!checkboxState) return;
+      Object.keys(checkboxState).forEach(function (key) {
+        document.querySelectorAll('[data-checkbox-key="' + key + '"]').forEach(function (checkbox) {
+          checkbox.checked = Boolean(checkboxState[key]);
+        });
+      });
+    }
+
+    function getSelectedVirtue() {
+      var selected = document.querySelector('#virtueChips button.chip.on');
+      return selected ? selected.dataset.virtue : '';
+    }
+
+    function saveData() {
+      var elements = getStateElements();
+      var payload = {
+        name: elements.name.value,
+        weekStart: elements.weekStart.value,
+        weekEnd: elements.weekEnd.value,
+        intention: elements.intention.value,
+        selectedVirtue: getSelectedVirtue(),
+        customVirtue: elements.otherVirtue.value,
+        checkboxes: saveCheckboxes()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    function loadData() {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (error) {
+        localStorage.removeItem(STORAGE_KEY);
+        console.warn('Dados locais inválidos foram removidos.', error);
+        return;
+      }
+      var elements = getStateElements();
+      elements.name.value = parsed.name || '';
+      elements.weekStart.value = parsed.weekStart || '';
+      elements.weekEnd.value = parsed.weekEnd || '';
+      elements.intention.value = parsed.intention || '';
+      elements.otherVirtue.value = parsed.customVirtue || '';
+      if (parsed.selectedVirtue) {
+        document.querySelectorAll('#virtueChips button.chip').forEach(function (chip) {
+          chip.classList.toggle('on', chip.dataset.virtue === parsed.selectedVirtue);
+        });
+      }
+      restoreCheckboxes(parsed.checkboxes);
+    }
+
+    function clearData() {
+      if (!window.confirm('Deseja limpar todo o plano desta semana? Esta ação não pode ser desfeita.')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      window.location.reload();
+    }
+
+    function syncCheckboxes(key, checked, source) {
+      document.querySelectorAll('[data-checkbox-key="' + key + '"]').forEach(function (checkbox) {
+        if (checkbox !== source) checkbox.checked = checked;
+      });
+    }
+
+    function bindCheckboxEvents() {
+      document.querySelectorAll('[data-checkbox-key]').forEach(function (checkbox) {
+        checkbox.addEventListener('change', function () {
+          syncCheckboxes(checkbox.dataset.checkboxKey, checkbox.checked, checkbox);
+          saveData();
+        });
+      });
+    }
+
+    function initializeVirtues() {
+      document.querySelectorAll('#virtueChips button.chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#virtueChips button.chip').forEach(function (item) {
+            item.classList.remove('on');
+          });
+          chip.classList.add('on');
+          saveData();
+        });
+      });
+
+      document.getElementById('otherVirtueInput').addEventListener('input', saveData);
+    }
+
+    function positionTooltip(chip, tooltip) {
+      var rect = chip.getBoundingClientRect();
+      var maxLeft = window.innerWidth - tooltip.offsetWidth - TOOLTIP_MARGIN_PX;
+      var left = Math.min(Math.max(rect.left, TOOLTIP_MARGIN_PX), maxLeft);
+      var top = rect.top - tooltip.offsetHeight - TOOLTIP_MARGIN_PX;
+      if (top < TOOLTIP_MARGIN_PX) top = rect.bottom + TOOLTIP_MARGIN_PX;
+      if (top + tooltip.offsetHeight > window.innerHeight - TOOLTIP_MARGIN_PX) {
+        top = window.innerHeight - tooltip.offsetHeight - TOOLTIP_MARGIN_PX;
+      }
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = top + 'px';
+    }
+
+    function initializeTooltips() {
+      var descriptions = {
+        'Paciência': 'Aprender a esperar com serenidade, acolher as dificuldades e tratar os outros com calma.',
+        'Justiça': 'Dar a cada pessoa aquilo que lhe é devido, agindo com honestidade e respeito.',
+        'Verdade': 'Falar e viver com sinceridade, evitando mentiras e falsidades.',
+        'Pureza': 'Buscar pensamentos, palavras e atitudes que aproximem de Deus e respeitem a dignidade das pessoas.',
+        'Mansidão': 'Responder com calma mesmo diante das dificuldades ou provocações.',
+        'Temperança': 'Usar com equilíbrio tudo aquilo que faz parte da vida, sem exageros.',
+        'Caridade': 'Amar concretamente o próximo através de atitudes, ajuda, perdão e cuidado.'
+      };
+
+      var tooltip = document.createElement('div');
+      tooltip.className = 'virtue-tooltip';
+      tooltip.setAttribute('role', 'tooltip');
+      tooltip.id = 'virtue-tooltip';
+      document.body.appendChild(tooltip);
+      var activeTooltipChip = null;
+
+      function showTooltip(chip) {
+        if (activeTooltipChip === chip && tooltip.classList.contains('show')) return;
+        var virtue = chip.dataset.virtue;
+        tooltip.textContent = descriptions[virtue] || '';
+        if (activeTooltipChip) activeTooltipChip.removeAttribute('aria-describedby');
+        chip.setAttribute('aria-describedby', tooltip.id);
+        activeTooltipChip = chip;
+        tooltip.classList.add('show');
+        positionTooltip(chip, tooltip);
+      }
+
+      function hideTooltip(optionalChip) {
+        tooltip.classList.remove('show');
+        var targetChip = optionalChip || activeTooltipChip;
+        if (targetChip) targetChip.removeAttribute('aria-describedby');
+        activeTooltipChip = null;
+      }
+
+      document.querySelectorAll('#virtueChips button.chip').forEach(function (chip) {
+        chip.addEventListener('mouseenter', function () { showTooltip(chip); });
+        chip.addEventListener('mouseleave', function () { hideTooltip(chip); });
+        chip.addEventListener('focus', function () { showTooltip(chip); });
+        chip.addEventListener('blur', function () { hideTooltip(chip); });
+        chip.addEventListener('touchstart', function () {
+          tooltipTimeout = setTimeout(function () { showTooltip(chip); }, TOOLTIP_DELAY_MS);
+        }, { passive: true });
+        chip.addEventListener('touchend', function () {
+          clearTimeout(tooltipTimeout);
+          hideTooltip(chip);
+        }, { passive: true });
+        chip.addEventListener('touchcancel', function () {
+          clearTimeout(tooltipTimeout);
+          hideTooltip(chip);
+        }, { passive: true });
+      });
+
+      window.addEventListener('scroll', function () { hideTooltip(); }, { passive: true });
+      window.addEventListener('resize', function () { hideTooltip(); });
+    }
+
+    function initializeResponsiveWeek() {
+      var table = document.querySelector('table.week');
+      var dayHeaders = Array.from(table.querySelectorAll('thead th')).slice(1).map(function (th) { return th.textContent.trim(); });
+      var rows = Array.from(table.querySelectorAll('tbody tr'));
+      var cardsContainer = document.getElementById('weekCards');
+
+      rows.forEach(function (row, rowIndex) {
+        var activity = row.querySelector('th').textContent.trim();
+        var inputs = row.querySelectorAll('td input[type="checkbox"]');
+        inputs.forEach(function (input, dayIndex) {
+          var key = 'routine-' + rowIndex + '-' + dayIndex;
+          input.dataset.checkboxKey = key;
+          input.id = key;
+          var srLabel = document.createElement('label');
+          srLabel.className = 'sr-only';
+          srLabel.setAttribute('for', key);
+          srLabel.textContent = activity + ' - ' + dayHeaders[dayIndex];
+          input.parentElement.appendChild(srLabel);
+        });
+      });
+
+      dayHeaders.forEach(function (day, dayIndex) {
+        var card = document.createElement('article');
+        card.className = 'week-card';
+        var title = document.createElement('h3');
+        title.textContent = day;
+        card.appendChild(title);
+
+        var list = document.createElement('ul');
+        list.className = 'week-card-list';
+
+        rows.forEach(function (row, rowIndex) {
+          var activity = row.querySelector('th').textContent.trim();
+          var key = 'routine-' + rowIndex + '-' + dayIndex;
+
+          var li = document.createElement('li');
+          var checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.dataset.checkboxKey = key;
+          checkbox.id = 'mobile-' + key;
+
+          var label = document.createElement('label');
+          label.setAttribute('for', checkbox.id);
+          label.textContent = activity;
+
+          li.appendChild(checkbox);
+          li.appendChild(label);
+          list.appendChild(li);
+        });
+
+        card.appendChild(list);
+        cardsContainer.appendChild(card);
+      });
+
+      document.querySelectorAll('.exame-list input[type="checkbox"]').forEach(function (checkbox) {
+        checkbox.dataset.checkboxKey = checkbox.id;
+      });
+    }
+
+    function initializeInputs() {
+      var elements = getStateElements();
+      [elements.name, elements.weekStart, elements.weekEnd, elements.intention].forEach(function (field) {
+        field.addEventListener('input', saveData);
+      });
+      document.getElementById('clearBtn').addEventListener('click', clearData);
+    }
+
+    initializeResponsiveWeek();
+    initializeVirtues();
+    initializeTooltips();
+    initializeInputs();
+    bindCheckboxEvents();
+    loadData();
+  })();
 </script>
 </body>
 </html>
