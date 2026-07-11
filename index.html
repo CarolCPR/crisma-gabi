@@ -696,18 +696,24 @@
       tooltip.setAttribute('role', 'tooltip');
       tooltip.id = 'virtue-tooltip';
       document.body.appendChild(tooltip);
+      var activeTooltipChip = null;
 
       function showTooltip(chip) {
+        if (activeTooltipChip === chip && tooltip.classList.contains('show')) return;
         var virtue = chip.dataset.virtue;
         tooltip.textContent = descriptions[virtue] || '';
+        if (activeTooltipChip) activeTooltipChip.removeAttribute('aria-describedby');
         chip.setAttribute('aria-describedby', tooltip.id);
+        activeTooltipChip = chip;
         tooltip.classList.add('show');
         positionTooltip(chip, tooltip);
       }
 
       function hideTooltip(chip) {
         tooltip.classList.remove('show');
-        if (chip) chip.removeAttribute('aria-describedby');
+        var targetChip = chip || activeTooltipChip;
+        if (targetChip) targetChip.removeAttribute('aria-describedby');
+        activeTooltipChip = null;
       }
 
       document.querySelectorAll('#virtueChips button.chip').forEach(function (chip) {
@@ -728,8 +734,8 @@
         }, { passive: true });
       });
 
-      window.addEventListener('scroll', function () { tooltip.classList.remove('show'); }, { passive: true });
-      window.addEventListener('resize', function () { tooltip.classList.remove('show'); });
+      window.addEventListener('scroll', function () { hideTooltip(); }, { passive: true });
+      window.addEventListener('resize', function () { hideTooltip(); });
     }
 
     function initializeResponsiveWeek() {
