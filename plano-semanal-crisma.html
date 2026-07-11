@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano Semanal — O Cristão Preparado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F1E3;
+    --paper-2:#EFE7D3;
+    --ink:#2B2418;
+    --muted:#867A5F;
+    --navy:#1E2A47;
+    --navy-2:#2A3A63;
+    --gold:#B8912E;
+    --gold-light:#DDC583;
+    --wine:#6E2A2A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    padding:32px 16px 80px;
+  }
+  .sheet{
+    max-width:880px;
+    margin:0 auto;
+    background:var(--paper);
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    text-align:center;
+    padding:8px 0 20px;
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--wine);
+    font-weight:600;
+  }
+  h1{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:700;
+    font-size:44px;
+    margin:6px 0 2px;
+    color:var(--navy);
+    letter-spacing:.01em;
+  }
+  .subtitle{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:19px;
+    color:var(--ink);
+    opacity:.85;
+    margin:0;
+  }
+
+  /* Rosary divider — signature element */
+  .rosary{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    margin:22px 0 26px;
+  }
+  .bead{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--gold);
+    opacity:.55;
+  }
+  .bead.big{width:12px;height:12px;opacity:.85;}
+  .cross{
+    font-family:'Cormorant Garamond',serif;
+    color:var(--wine);
+    font-size:20px;
+    margin:0 4px;
+  }
+
+  /* ---------- Name / week fields ---------- */
+  .meta{
+    display:flex;
+    gap:24px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-bottom:30px;
+    font-size:14px;
+  }
+  .meta label{
+    color:var(--muted);
+    font-weight:600;
+    margin-right:6px;
+  }
+  .meta input{
+    border:none;
+    border-bottom:1.5px solid var(--gold-light);
+    background:transparent;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:2px 4px;
+    color:var(--ink);
+    width:150px;
+  }
+  .meta input:focus{outline:none;border-color:var(--gold);}
+
+  /* ---------- Section shell ---------- */
+  section.card{
+    background:#FFFDF8;
+    border:1px solid var(--gold-light);
+    border-radius:3px;
+    padding:22px 26px;
+    margin-bottom:22px;
+    position:relative;
+  }
+  .card-title{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:700;
+    font-size:23px;
+    color:var(--navy);
+    margin:0 0 4px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .card-num{
+    font-size:13px;
+    color:var(--wine);
+    font-weight:600;
+    font-family:'Inter',sans-serif;
+  }
+  .card-hint{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 16px;
+  }
+
+  /* ---------- Intenção & Virtude ---------- */
+  textarea{
+    width:100%;
+    min-height:56px;
+    border:1px solid var(--gold-light);
+    border-radius:2px;
+    background:var(--paper);
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    padding:10px 12px;
+    resize:vertical;
+    color:var(--ink);
+  }
+  textarea:focus{outline:none;border-color:var(--gold);}
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:4px;
+  }
+  .chip{
+    border:1.3px solid var(--gold-light);
+    background:transparent;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:500;
+    padding:6px 14px;
+    border-radius:100px;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .chip:hover{border-color:var(--gold);}
+  .chip.on{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:var(--paper);
+  }
+  .chip-other{
+    border:none;
+    border-bottom:1.3px solid var(--gold-light);
+    border-radius:0;
+    padding:6px 4px;
+    width:160px;
+  }
+  .chip-other:focus{outline:none;border-color:var(--gold);}
+
+  /* ---------- Weekly grid ---------- */
+  .grid-wrap{overflow-x:auto;}
+  table.week{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    min-width:640px;
+  }
+  table.week th, table.week td{
+    border:1px solid var(--gold-light);
+    text-align:center;
+    padding:9px 4px;
+  }
+  table.week thead th{
+    background:var(--navy);
+    color:var(--paper);
+    font-family:'Cormorant Garamond',serif;
+    font-size:16px;
+    font-weight:600;
+    padding:10px 4px;
+  }
+  table.week thead th.corner{
+    background:var(--paper);
+    color:var(--navy);
+  }
+  table.week tbody th{
+    text-align:left;
+    font-weight:600;
+    color:var(--navy);
+    font-size:12.5px;
+    background:var(--paper-2);
+    padding-left:10px;
+    white-space:nowrap;
+  }
+  table.week input[type="checkbox"]{
+    width:17px;height:17px;
+    accent-color:var(--wine);
+    cursor:pointer;
+  }
+
+  /* ---------- Exame de consciência ---------- */
+  .exame-list{
+    list-style:none;
+    padding:0;
+    margin:0;
+    display:grid;
+    gap:10px;
+  }
+  .exame-list li{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    font-size:14px;
+  }
+  .exame-list input{
+    margin-top:3px;
+    width:16px;height:16px;
+    accent-color:var(--wine);
+    flex-shrink:0;
+  }
+
+  /* ---------- Prayer footer ---------- */
+  .prayer{
+    background:var(--navy);
+    color:var(--paper);
+    padding:28px 30px;
+    border-radius:3px;
+    text-align:center;
+    margin-bottom:26px;
+  }
+  .prayer .card-title{color:var(--gold-light);justify-content:center;}
+  .prayer p{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:18px;
+    line-height:1.65;
+    max-width:560px;
+    margin:14px auto 0;
+    color:#F1EAD8;
+  }
+
+  /* ---------- Motto strip ---------- */
+  .motto{
+    text-align:center;
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:15px;
+    color:var(--wine);
+    margin-top:-4px;
+    margin-bottom:34px;
+  }
+
+  /* ---------- Print button ---------- */
+  .print-btn-wrap{text-align:center;margin-bottom:30px;}
+  #printBtn{
+    background:var(--wine);
+    color:var(--paper);
+    border:none;
+    padding:11px 26px;
+    border-radius:100px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    letter-spacing:.03em;
+    cursor:pointer;
+  }
+  #printBtn:hover{background:#5a2222;}
+
+  @media print{
+    body{padding:0;background:#fff;}
+    #printBtn, .print-btn-wrap{display:none;}
+    section.card{break-inside:avoid;border-color:#ccc;}
+    .prayer{background:#1E2A47 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    table.week thead th{background:#1E2A47 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  }
+
+  @media (max-width:600px){
+    h1{font-size:34px;}
+    section.card{padding:18px 16px;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header>
+    <div class="eyebrow">Preparação para a Crisma</div>
+    <h1>Regra de Vida da Semana</h1>
+    <p class="subtitle">O cristão preparado para a prática dos seus deveres</p>
+  </header>
+
+  <div class="rosary" aria-hidden="true">
+    <span class="cross">✝</span>
+    <span class="bead big"></span><span class="bead"></span><span class="bead"></span>
+    <span class="bead"></span><span class="bead"></span><span class="bead"></span>
+    <span class="bead"></span><span class="bead"></span><span class="bead"></span>
+    <span class="bead big"></span>
+  </div>
+
+  <div class="meta">
+    <div><label>Nome:</label><input type="text" placeholder="seu nome"></div>
+    <div><label>Semana de:</label><input type="text" placeholder="dd/mm" style="width:70px;"></div>
+    <div><label>até:</label><input type="text" placeholder="dd/mm" style="width:70px;"></div>
+  </div>
+
+  <!-- INTENÇÃO -->
+  <section class="card">
+    <h2 class="card-title"><span class="card-num">01</span> Minha intenção da semana</h2>
+    <p class="card-hint">"Senhor, que eu faça isto pela salvação e pelo bem real das pessoas." Escreva por quem ou por quê você quer oferecer seus dias.</p>
+    <textarea placeholder="Ex: Ofereço esta semana pela saúde da minha avó, e para ter mais paciência com meu irmão..."></textarea>
+  </section>
+
+  <!-- VIRTUDE -->
+  <section class="card">
+    <h2 class="card-title"><span class="card-num">02</span> Virtude que vou praticar</h2>
+    <p class="card-hint">Escolha uma virtude para ser o foco da semana — ou escreva a sua.</p>
+    <div class="chips" id="virtueChips">
+      <button type="button" class="chip">Paciência</button>
+      <button type="button" class="chip">Justiça</button>
+      <button type="button" class="chip">Verdade</button>
+      <button type="button" class="chip">Pureza</button>
+      <button type="button" class="chip">Mansidão</button>
+      <button type="button" class="chip">Temperança</button>
+      <button type="button" class="chip">Caridade</button>
+      <input type="text" class="chip chip-other" placeholder="outra...">
+    </div>
+  </section>
+
+  <!-- ROTINA SEMANAL -->
+  <section class="card">
+    <h2 class="card-title"><span class="card-num">03</span> Rotina de oração e recolhimento</h2>
+    <p class="card-hint">Marque cada momento vivido durante o dia — nem que seja breve, o importante é a constância.</p>
+    <div class="grid-wrap">
+      <table class="week">
+        <thead>
+          <tr>
+            <th class="corner"></th>
+            <th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th><th>Dom</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Oração da manhã</th>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+          </tr>
+          <tr>
+            <th>Missa ou leitura espiritual</th>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+          </tr>
+          <tr>
+            <th>Terço</th>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+          </tr>
+          <tr>
+            <th>Exame de consciência (noite)</th>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+          </tr>
+          <tr>
+            <th>Um gesto de caridade concreta</th>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+            <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- EXAME DE CONSCIÊNCIA -->
+  <section class="card">
+    <h2 class="card-title"><span class="card-num">04</span> Perguntas para o exame de consciência à noite</h2>
+    <p class="card-hint">Antes de dormir, revise rapidamente o dia com estas perguntas.</p>
+    <ul class="exame-list">
+      <li><input type="checkbox"><span>Cumpri o que era justo antes do que era apenas conveniente para mim?</span></li>
+      <li><input type="checkbox"><span>Tive paciência com quem convive comigo, mesmo quando foi difícil?</span></li>
+      <li><input type="checkbox"><span>Fiz algo, por menor que fosse, pelo bem real de alguém?</span></li>
+      <li><input type="checkbox"><span>Reservei um momento — mesmo curto — para orar e voltar a Deus?</span></li>
+      <li><input type="checkbox"><span>Pratiquei a virtude que escolhi para esta semana?</span></li>
+    </ul>
+  </section>
+
+  <!-- ORAÇÃO FINAL -->
+  <section class="prayer">
+    <h2 class="card-title">Oração a Maria Auxiliadora</h2>
+    <p>
+      Maria, Virgem Auxiliadora, ensina-me a voltar a Deus com fidelidade.<br>
+      Coloca em meu coração a caridade que busca o bem real das pessoas<br>
+      e faz de meus deveres um caminho de santidade.<br>
+      Ajuda-me a viver com paz, a cumprir o que é justo<br>
+      e a suportar as dificuldades com confiança em Cristo. Amém.
+    </p>
+  </section>
+
+  <div class="motto">"Dai-me as almas, e tomai todo o resto." — São João Bosco</div>
+
+  <div class="print-btn-wrap">
+    <button id="printBtn" onclick="window.print()">Imprimir meu plano</button>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('#virtueChips .chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      document.querySelectorAll('#virtueChips .chip').forEach(function(c){ c.classList.remove('on'); });
+      chip.classList.add('on');
+    });
+  });
+</script>
+</body>
+</html>
