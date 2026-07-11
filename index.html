@@ -557,6 +557,8 @@
 <script>
   (function () {
     var STORAGE_KEY = 'crismaWeekPlanData';
+    var TOOLTIP_DELAY_MS = 450;
+    var TOOLTIP_MARGIN_PX = 10;
     var tooltipTimeout = null;
 
     function getStateElements() {
@@ -612,6 +614,7 @@
       try {
         parsed = JSON.parse(raw);
       } catch (error) {
+        console.warn('Dados locais inválidos foram removidos.', error);
         localStorage.removeItem(STORAGE_KEY);
         return;
       }
@@ -666,13 +669,12 @@
 
     function positionTooltip(chip, tooltip) {
       var rect = chip.getBoundingClientRect();
-      var margin = 10;
-      var maxLeft = window.innerWidth - tooltip.offsetWidth - margin;
-      var left = Math.min(Math.max(rect.left, margin), maxLeft);
-      var top = rect.top - tooltip.offsetHeight - 10;
-      if (top < margin) top = rect.bottom + 10;
-      if (top + tooltip.offsetHeight > window.innerHeight - margin) {
-        top = window.innerHeight - tooltip.offsetHeight - margin;
+      var maxLeft = window.innerWidth - tooltip.offsetWidth - TOOLTIP_MARGIN_PX;
+      var left = Math.min(Math.max(rect.left, TOOLTIP_MARGIN_PX), maxLeft);
+      var top = rect.top - tooltip.offsetHeight - TOOLTIP_MARGIN_PX;
+      if (top < TOOLTIP_MARGIN_PX) top = rect.bottom + TOOLTIP_MARGIN_PX;
+      if (top + tooltip.offsetHeight > window.innerHeight - TOOLTIP_MARGIN_PX) {
+        top = window.innerHeight - tooltip.offsetHeight - TOOLTIP_MARGIN_PX;
       }
       tooltip.style.left = left + 'px';
       tooltip.style.top = top + 'px';
@@ -714,7 +716,7 @@
         chip.addEventListener('focus', function () { showTooltip(chip); });
         chip.addEventListener('blur', function () { hideTooltip(chip); });
         chip.addEventListener('touchstart', function () {
-          tooltipTimeout = setTimeout(function () { showTooltip(chip); }, 450);
+          tooltipTimeout = setTimeout(function () { showTooltip(chip); }, TOOLTIP_DELAY_MS);
         }, { passive: true });
         chip.addEventListener('touchend', function () {
           clearTimeout(tooltipTimeout);
@@ -785,8 +787,8 @@
         cardsContainer.appendChild(card);
       });
 
-      document.querySelectorAll('.exame-list input[type="checkbox"]').forEach(function (checkbox, index) {
-        checkbox.dataset.checkboxKey = 'exam-' + index;
+      document.querySelectorAll('.exame-list input[type="checkbox"]').forEach(function (checkbox) {
+        checkbox.dataset.checkboxKey = checkbox.id;
       });
     }
 
