@@ -709,9 +709,9 @@
         positionTooltip(chip, tooltip);
       }
 
-      function hideTooltip(chip) {
+      function hideTooltip(optionalChip) {
         tooltip.classList.remove('show');
-        var targetChip = chip || activeTooltipChip;
+        var targetChip = optionalChip || activeTooltipChip;
         if (targetChip) targetChip.removeAttribute('aria-describedby');
         activeTooltipChip = null;
       }
