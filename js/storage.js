@@ -196,7 +196,7 @@ export function loadAppData() {
     try {
       parsed = JSON.parse(raw);
     } catch (e) {
-      warnings.push('Os dados salvos estão em formato inválido. Um novo plano foi iniciado, mas os dados anteriores foram preservados.');
+      warnings.push('Os dados salvos estão em formato inválido. Um novo plano foi iniciado. Os dados anteriores foram preservados no armazenamento do navegador e podem ser recuperados via DevTools (Application → Local Storage → ' + APP_KEY + ').');
       console.warn('[storage] JSON inválido em APP_KEY — mantendo chave intacta:', e);
       return { data: createEmptyAppData(), warnings: warnings, migrated: false, storageAvailable: true };
     }
@@ -272,9 +272,9 @@ function tryConvertDateToISO(value) {
   if (month < 1 || month > 12 || day < 1 || day > 31) return '';
   var year = new Date().getFullYear();
   var iso = year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
-  // validar que a data resultante é real
-  var d = new Date(iso);
-  if (isNaN(d.getTime()) || d.getMonth() + 1 !== month || d.getDate() !== day) return '';
+  // Validar usando UTC para evitar deslocamentos de fuso horário
+  var d = new Date(iso + 'T00:00:00Z');
+  if (isNaN(d.getTime()) || d.getUTCMonth() + 1 !== month || d.getUTCDate() !== day) return '';
   return iso;
 }
 
@@ -315,6 +315,7 @@ export function migrateLegacyData() {
 
   if (hasCustom && hasSelected) {
     console.warn('[storage] Migração: customVirtue e selectedVirtue ambos preenchidos — customVirtue tem precedência.');
+    warnings.push('O plano anterior tinha uma virtude escolhida e uma virtude personalizada ao mesmo tempo. A virtude personalizada foi mantida.');
   }
   if (hasCustom) {
     virtueMode = VIRTUE_MODES.CUSTOM;

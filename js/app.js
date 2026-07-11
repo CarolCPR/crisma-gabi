@@ -75,7 +75,7 @@ function save() {
 // ---------------------------------------------------------------------------
 
 function handleClear() {
-  if (!window.confirm('Deseja limpar o plano desta semana? O seu nome e a estrutura serão preservados. Esta ação não pode ser desfeita.')) return;
+  if (!window.confirm('Deseja limpar os dados desta semana (intenção, virtude e checkboxes)? Seu nome será preservado. Esta ação não pode ser desfeita.')) return;
 
   appData = clearActiveWeekData(appData);
 
