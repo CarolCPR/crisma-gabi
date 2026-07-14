@@ -1,7 +1,20 @@
 /** @module app */
 import { TOOLTIP_DELAY_MS, TOOLTIP_MARGIN_PX, VIRTUE_MODES } from './constants.js';
 import { loadAppData, saveAppData } from './storage.js';
-import { getActiveWeek, updateActiveWeek, clearActiveWeekData, createNewWeek } from './weeks.js';
+import {
+  getActiveWeek,
+  getCurrentWeekId,
+  updateActiveWeek,
+  clearActiveWeekData,
+  createNewWeek,
+  ensureCurrentWeek,
+  setActiveWeek,
+  deleteWeek,
+  markWeekDone,
+} from './weeks.js';
+import { renderHistory } from './history.js';
+import { renderStatistics } from './statistics.js';
+import { exportBackup, importBackupFile } from './backup.js';
 import {
   showStatus,
   clearStatus,
@@ -13,16 +26,8 @@ import {
   positionTooltip,
 } from './ui.js';
 
-// ---------------------------------------------------------------------------
-// Estado em memória
-// ---------------------------------------------------------------------------
-
 /** @type {import('./storage.js').AppData} */
 var appData;
-
-// ---------------------------------------------------------------------------
-// Leitura do formulário → semana
-// ---------------------------------------------------------------------------
 
 function readFormIntoWeek() {
   var els = getFormElements();
@@ -32,7 +37,6 @@ function readFormIntoWeek() {
   var virtueMode = VIRTUE_MODES.NONE;
   var virtueValue = '';
 
-  // custom tem precedência se customVirtue preenchido
   if (customVirtue) {
     virtueMode = VIRTUE_MODES.CUSTOM;
     virtueValue = customVirtue;
@@ -50,55 +54,135 @@ function readFormIntoWeek() {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Salvar estado atual
-// ---------------------------------------------------------------------------
+function renderCurrentWeekBanner() {
+  var banner = document.getElementById('historyViewBanner');
+  if (!banner) return;
+
+  var activeWeek = getActiveWeek(appData);
+  if (!activeWeek) {
+    banner.hidden = true;
+    return;
+  }
+
+  var currentWeekId = getCurrentWeekId(appData);
+  if (!currentWeekId || currentWeekId === activeWeek.id) {
+    banner.hidden = true;
+    return;
+  }
+
+  banner.hidden = false;
+  banner.textContent = 'Você está visualizando a semana de ' + (activeWeek.displayStartDate || '--/--') + ' a ' + (activeWeek.displayEndDate || '--/--') + '.';
+}
+
+function refreshUi() {
+  var activeWeek = getActiveWeek(appData);
+  populateForm(activeWeek, appData.profile.name);
+  renderHistory(appData, {
+    onOpen: handleOpenWeek,
+    onDelete: handleDeleteWeek,
+  });
+  renderStatistics(appData);
+  renderCurrentWeekBanner();
+}
+
+function persistCurrentState() {
+  var result = saveAppData(appData);
+  if (!result.ok) {
+    showStatus('Não foi possível salvar as alterações. Verifique o espaço de armazenamento do navegador.', 'error');
+    return false;
+  }
+  return true;
+}
 
 function save() {
   var els = getFormElements();
-  // Atualiza nome no perfil raiz
   appData = Object.assign({}, appData, {
     profile: { name: els.name.value },
   });
 
   var weekChanges = readFormIntoWeek();
   appData = updateActiveWeek(appData, weekChanges);
-
-  var result = saveAppData(appData);
-  if (!result.ok) {
-    showStatus('Não foi possível salvar as alterações. Verifique o espaço de armazenamento do navegador.', 'error');
-  }
+  persistCurrentState();
+  renderHistory(appData, {
+    onOpen: handleOpenWeek,
+    onDelete: handleDeleteWeek,
+  });
+  renderStatistics(appData);
 }
-
-// ---------------------------------------------------------------------------
-// Limpar plano (apenas semana ativa)
-// ---------------------------------------------------------------------------
 
 function handleClear() {
   if (!window.confirm('Deseja limpar os dados desta semana (intenção, virtude e checkboxes)? Seu nome será preservado. Esta ação não pode ser desfeita.')) return;
 
   appData = clearActiveWeekData(appData);
 
-  // Garantir que existe semana ativa após limpar
   if (!appData.activeWeekId) {
     appData = createNewWeek(appData);
   }
 
-  var result = saveAppData(appData);
-
-  var activeWeek = getActiveWeek(appData);
-  populateForm(activeWeek, appData.profile.name);
-
-  if (!result.ok) {
-    showStatus('Não foi possível salvar após limpar o plano.', 'error');
-  } else {
-    clearStatus();
-  }
+  persistCurrentState();
+  refreshUi();
+  clearStatus();
 }
 
-// ---------------------------------------------------------------------------
-// Tabela responsiva + data-checkbox-key
-// ---------------------------------------------------------------------------
+function handleOpenWeek(weekId) {
+  appData = setActiveWeek(appData, weekId);
+  persistCurrentState();
+  refreshUi();
+}
+
+function handleDeleteWeek(weekId) {
+  if (!window.confirm('Deseja excluir esta semana do histórico? Esta ação não pode ser desfeita.')) return;
+
+  appData = deleteWeek(appData, weekId);
+  persistCurrentState();
+  refreshUi();
+}
+
+function handleBackToCurrentWeek() {
+  var currentWeekId = getCurrentWeekId(appData);
+  if (!currentWeekId) {
+    showStatus('A semana atual ainda não existe. Inicie uma nova semana para continuar.', 'warn');
+    return;
+  }
+  appData = setActiveWeek(appData, currentWeekId);
+  persistCurrentState();
+  refreshUi();
+  clearStatus();
+}
+
+function handleNewWeek() {
+  var activeWeek = getActiveWeek(appData);
+  if (activeWeek && activeWeek.status !== 'done') {
+    if (window.confirm('Deseja concluir a semana atual antes de iniciar uma nova?')) {
+      appData = markWeekDone(appData, activeWeek.id);
+    }
+  }
+
+  appData = createNewWeek(appData);
+  persistCurrentState();
+  refreshUi();
+  clearStatus();
+}
+
+async function handleImport(event) {
+  var file = event.target.files && event.target.files[0];
+  event.target.value = '';
+
+  if (!file) return;
+
+  try {
+    var result = await importBackupFile(file, appData);
+    if (result.canceled) return;
+
+    appData = ensureCurrentWeek(result.data);
+    if (!persistCurrentState()) return;
+
+    refreshUi();
+    showStatus('Backup importado com sucesso.', 'warn');
+  } catch (error) {
+    showStatus(error && error.message ? error.message : 'Falha ao importar backup.', 'error');
+  }
+}
 
 function initializeResponsiveWeek() {
   var table = document.querySelector('table.week');
@@ -159,10 +243,6 @@ function initializeResponsiveWeek() {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Eventos de checkboxes
-// ---------------------------------------------------------------------------
-
 function bindCheckboxEvents() {
   document.querySelectorAll('[data-checkbox-key]').forEach(function (checkbox) {
     checkbox.addEventListener('change', function () {
@@ -172,10 +252,6 @@ function bindCheckboxEvents() {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Virtudes e tooltips
-// ---------------------------------------------------------------------------
-
 function initializeVirtues() {
   document.querySelectorAll('#virtueChips button.chip').forEach(function (chip) {
     chip.addEventListener('click', function () {
@@ -184,7 +260,6 @@ function initializeVirtues() {
         item.classList.remove('on');
       });
       if (!wasOn) chip.classList.add('on');
-      // limpar campo de virtude customizada se selecionar chip predefinido
       var otherVirtue = document.getElementById('otherVirtueInput');
       if (!wasOn && otherVirtue) otherVirtue.value = '';
       save();
@@ -192,7 +267,6 @@ function initializeVirtues() {
   });
 
   document.getElementById('otherVirtueInput').addEventListener('input', function () {
-    // limpar chips se usuário digitar virtude customizada
     if (this.value.trim()) {
       document.querySelectorAll('#virtueChips button.chip').forEach(function (chip) {
         chip.classList.remove('on');
@@ -261,47 +335,44 @@ function initializeTooltips() {
   window.addEventListener('resize', function () { hideTooltip(); });
 }
 
-// ---------------------------------------------------------------------------
-// Campos de texto e datas
-// ---------------------------------------------------------------------------
-
 function initializeInputs() {
   var els = getFormElements();
   [els.name, els.weekStart, els.weekEnd, els.intention].forEach(function (field) {
     field.addEventListener('input', save);
   });
+
   document.getElementById('clearBtn').addEventListener('click', handleClear);
+  document.getElementById('newWeekBtn').addEventListener('click', handleNewWeek);
+  document.getElementById('backToCurrentBtn').addEventListener('click', handleBackToCurrentWeek);
+
+  document.getElementById('exportBtn').addEventListener('click', function () {
+    exportBackup(appData);
+    showStatus('Backup exportado com sucesso. Guarde o arquivo em local seguro.', 'warn');
+  });
+
+  var importInput = document.getElementById('importFileInput');
+  importInput.addEventListener('change', handleImport);
+  document.getElementById('importBtn').addEventListener('click', function () {
+    importInput.click();
+  });
 }
 
-// ---------------------------------------------------------------------------
-// Bootstrap
-// ---------------------------------------------------------------------------
-
 function init() {
-  // 1. Construir estrutura responsiva antes de restaurar dados
   initializeResponsiveWeek();
 
-  // 2. Carregar dados (com migração automática se necessário)
   var loadResult = loadAppData();
-  appData = loadResult.data;
+  appData = ensureCurrentWeek(loadResult.data);
 
-  // 3. Garantir que existe ao menos uma semana ativa
-  if (!appData.activeWeekId || !getActiveWeek(appData)) {
-    appData = createNewWeek(appData);
-    saveAppData(appData);
+  if (!persistCurrentState()) {
+    appData = loadResult.data;
   }
 
-  // 4. Popular formulário
-  var activeWeek = getActiveWeek(appData);
-  populateForm(activeWeek, appData.profile.name);
-
-  // 5. Inicializar interações (após restaurar estado, para não disparar save() prematuro)
+  refreshUi();
   initializeVirtues();
   initializeTooltips();
   initializeInputs();
   bindCheckboxEvents();
 
-  // 6. Exibir avisos de armazenamento/migração ao usuário
   if (!loadResult.storageAvailable) {
     showStatus('O armazenamento local não está disponível. Os dados não serão salvos entre sessões.', 'error');
   } else if (loadResult.warnings.length > 0) {

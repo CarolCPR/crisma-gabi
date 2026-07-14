@@ -353,6 +353,83 @@ textarea:focus-visible{
   border-color:var(--wine);
   background:rgba(110,42,42,.06);
 }
+#newWeekBtn{
+  background:var(--navy);
+}
+#newWeekBtn:hover{
+  background:#17203a;
+}
+.history-view-banner{
+  font-size:13px;
+  padding:8px 14px;
+  border:1px solid var(--gold-light);
+  border-radius:3px;
+  margin-bottom:18px;
+  background:#fff8e1;
+  color:#5a4010;
+}
+.history-controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:14px;
+}
+.history-list{
+  display:grid;
+  gap:10px;
+}
+.history-card{
+  border:1px solid var(--gold-light);
+  border-radius:3px;
+  padding:12px;
+  background:var(--paper);
+}
+.history-card.active{
+  border-color:var(--navy);
+}
+.history-card h3{
+  margin:0 0 8px;
+  font-family:'Cormorant Garamond',serif;
+  color:var(--navy);
+  font-size:22px;
+}
+.history-meta{
+  margin:0 0 10px;
+  font-size:13px;
+  color:var(--ink);
+}
+.history-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.history-btn{
+  padding:8px 14px;
+  font-size:12.5px;
+}
+.history-btn-light{
+  background:transparent;
+  border:1px solid var(--gold-light);
+  color:var(--wine);
+}
+.history-btn-light:hover{
+  border-color:var(--wine);
+  background:rgba(110,42,42,.06);
+}
+.history-empty{
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+}
+.statistics-list{
+  margin:0;
+  padding-left:20px;
+  display:grid;
+  gap:8px;
+}
+.statistics-list li{
+  font-size:14px;
+}
 .sr-only{
   position:absolute;
   width:1px;
@@ -411,6 +488,8 @@ textarea:focus-visible{
   body{padding:0;background:#fff;}
   .print-btn-wrap{display:none;}
   #appStatus{display:none !important;}
+  .history-controls{display:none !important;}
+  #historyViewBanner{display:none !important;}
   section.card{break-inside:avoid;border-color:#ccc;}
   .prayer{background:#1E2A47 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
   table.week thead th{background:#1E2A47 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}

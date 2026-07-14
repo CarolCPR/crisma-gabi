@@ -28,6 +28,7 @@
   </div>
 
   <div id="appStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="historyViewBanner" class="history-view-banner" hidden></div>
 
   <div class="meta">
     <div><label for="nameInput">Nome:</label><input id="nameInput" type="text" placeholder="seu nome" autocomplete="name"></div>
@@ -132,9 +133,28 @@
   <div class="motto">"Dai-me as almas, e tomai todo o resto." — São João Bosco</div>
 
   <div class="print-btn-wrap">
+    <button id="newWeekBtn" class="action-btn" type="button">Nova semana</button>
     <button id="printBtn" class="action-btn" type="button" onclick="window.print()">Imprimir meu plano</button>
     <button id="clearBtn" class="action-btn" type="button">Limpar plano</button>
   </div>
+
+  <section class="card">
+    <h2 class="card-title"><span class="card-num">05</span> Minha caminhada</h2>
+    <p class="card-hint">Consulte, abra e organize suas semanas registradas.</p>
+    <div class="history-controls">
+      <button id="backToCurrentBtn" class="action-btn history-btn history-btn-light" type="button">Voltar para esta semana</button>
+      <button id="exportBtn" class="action-btn history-btn" type="button">Exportar meus dados</button>
+      <button id="importBtn" class="action-btn history-btn history-btn-light" type="button">Importar backup</button>
+      <input id="importFileInput" type="file" accept="application/json,.json" hidden>
+    </div>
+    <div id="historyList" class="history-list" aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title"><span class="card-num">06</span> Estatísticas pessoais</h2>
+    <p class="card-hint">Indicadores simples da sua caminhada, calculados localmente.</p>
+    <ul id="statisticsList" class="statistics-list"></ul>
+  </section>
 
 </div>
 
