@@ -14,12 +14,13 @@ function toDisplayDate(date) {
   return pad(date.getDate()) + '/' + pad(date.getMonth() + 1);
 }
 
-function fromISODate(isoDate) {
+function parseISODate(isoDate) {
   if (!isoDate || typeof isoDate !== 'string') return null;
   var match = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return null;
   var date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
   if (isNaN(date.getTime())) return null;
+  // Rejeita overflow normalizado pelo Date (ex.: 2026-02-30 vira março).
   if (toISODate(date) !== isoDate) return null;
   return date;
 }
@@ -43,7 +44,7 @@ export function getCurrentWeekRange() {
 }
 
 function getNextWeekRange(baseStartISO) {
-  var baseStart = fromISODate(baseStartISO);
+  var baseStart = parseISODate(baseStartISO);
   if (!baseStart) return getCurrentWeekRange();
   var monday = new Date(baseStart);
   monday.setDate(monday.getDate() + 7);

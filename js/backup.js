@@ -63,6 +63,8 @@ function parseImportedPayload(jsonText) {
 }
 
 function mergeWeeks(currentWeeks, incomingWeeks) {
+  // Regra de conflito: quando o mesmo id aparece nas duas origens, manter
+  // o registro com updatedAt mais recente (ISO 8601 permite comparação lexicográfica).
   var byId = {};
 
   currentWeeks.forEach(function (week) {
@@ -103,21 +105,24 @@ export async function importBackupFile(file, currentData) {
   var text = await readJsonFile(file);
   var importedData = parseImportedPayload(text);
 
-  var mode = window.prompt('Backup encontrado. Digite "substituir" para trocar todos os dados ou "mesclar" para combinar com os dados atuais.');
-  if (!mode) {
+  var option = window.prompt(
+    'Como deseja importar o backup?\\n1 - Substituir dados atuais\\n2 - Mesclar com dados atuais\\n0 - Cancelar',
+    '2'
+  );
+
+  if (option === null || option.trim() === '0') {
     return { canceled: true, data: currentData };
   }
 
-  var normalized = mode.trim().toLowerCase();
-  if (normalized !== 'substituir' && normalized !== 'mesclar') {
-    throw new Error('Opção inválida. Digite substituir ou mesclar.');
-  }
-
-  if (normalized === 'substituir') {
+  if (option.trim() === '1') {
     if (!window.confirm('Tem certeza de que deseja substituir os dados atuais pelo backup?')) {
       return { canceled: true, data: currentData };
     }
     return { canceled: false, data: importedData };
+  }
+
+  if (option.trim() !== '2') {
+    throw new Error('Opção inválida. Use 1, 2 ou 0.');
   }
 
   return { canceled: false, data: mergeAppData(currentData, importedData) };

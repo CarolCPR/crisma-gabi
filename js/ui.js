@@ -3,7 +3,7 @@
 /**
  * Exibe uma mensagem de status na região aria-live do app.
  * @param {string} message - Mensagem amigável para o usuário.
- * @param {'warn'|'error'|''} [type='warn'] - Nível visual da mensagem.
+ * @param {'warn'|'error'|'success'|''} [type='warn'] - Nível visual da mensagem.
  */
 export function showStatus(message, type) {
   var region = document.getElementById('appStatus');

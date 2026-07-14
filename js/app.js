@@ -178,7 +178,7 @@ async function handleImport(event) {
     if (!persistCurrentState()) return;
 
     refreshUi();
-    showStatus('Backup importado com sucesso.', 'warn');
+    showStatus('Backup importado com sucesso.', 'success');
   } catch (error) {
     showStatus(error && error.message ? error.message : 'Falha ao importar backup.', 'error');
   }
@@ -253,12 +253,18 @@ function bindCheckboxEvents() {
 }
 
 function initializeVirtues() {
-  document.querySelectorAll('#virtueChips button.chip').forEach(function (chip) {
+  var chips = Array.from(document.querySelectorAll('#virtueChips button.chip'));
+
+  function clearChipSelection() {
+    chips.forEach(function (item) {
+      item.classList.remove('on');
+    });
+  }
+
+  chips.forEach(function (chip) {
     chip.addEventListener('click', function () {
       var wasOn = chip.classList.contains('on');
-      document.querySelectorAll('#virtueChips button.chip').forEach(function (item) {
-        item.classList.remove('on');
-      });
+      clearChipSelection();
       if (!wasOn) chip.classList.add('on');
       var otherVirtue = document.getElementById('otherVirtueInput');
       if (!wasOn && otherVirtue) otherVirtue.value = '';
@@ -268,9 +274,7 @@ function initializeVirtues() {
 
   document.getElementById('otherVirtueInput').addEventListener('input', function () {
     if (this.value.trim()) {
-      document.querySelectorAll('#virtueChips button.chip').forEach(function (chip) {
-        chip.classList.remove('on');
-      });
+      clearChipSelection();
     }
     save();
   });
@@ -347,7 +351,7 @@ function initializeInputs() {
 
   document.getElementById('exportBtn').addEventListener('click', function () {
     exportBackup(appData);
-    showStatus('Backup exportado com sucesso. Guarde o arquivo em local seguro.', 'warn');
+    showStatus('Backup exportado com sucesso. Guarde o arquivo em local seguro.', 'success');
   });
 
   var importInput = document.getElementById('importFileInput');
