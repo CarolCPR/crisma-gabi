@@ -1,6 +1,7 @@
 /** @module backup */
 import { DATA_VERSION } from './constants.js';
 import { validateAppData } from './storage.js';
+import { showImportOptionsDialog, showConfirmDialog } from './ui.js';
 
 function buildBackupPayload(appData) {
   return {
@@ -105,24 +106,22 @@ export async function importBackupFile(file, currentData) {
   var text = await readJsonFile(file);
   var importedData = parseImportedPayload(text);
 
-  var option = window.prompt(
-    'Como deseja importar o backup?\\n1 - Substituir dados atuais\\n2 - Mesclar com dados atuais\\n0 - Cancelar',
-    '2'
-  );
+  var weekCount = Array.isArray(importedData.weeks) ? importedData.weeks.length : 0;
+  var weekLabel = weekCount === 1 ? '1 semana encontrada' : weekCount + ' semanas encontradas';
+  var message = 'Backup válido — ' + weekLabel + '.\nComo deseja importar?';
 
-  if (option === null || option.trim() === '0') {
+  var option = await showImportOptionsDialog(message);
+
+  if (option === 'cancel' || option === null) {
     return { canceled: true, data: currentData };
   }
 
-  if (option.trim() === '1') {
-    if (!window.confirm('Tem certeza de que deseja substituir os dados atuais pelo backup?')) {
+  if (option === 'replace') {
+    var confirmed = await showConfirmDialog('Tem certeza de que deseja substituir os dados atuais pelo backup? Esta ação não pode ser desfeita.');
+    if (!confirmed) {
       return { canceled: true, data: currentData };
     }
     return { canceled: false, data: importedData };
-  }
-
-  if (option.trim() !== '2') {
-    throw new Error('Opção inválida. Use 1, 2 ou 0.');
   }
 
   return { canceled: false, data: mergeAppData(currentData, importedData) };

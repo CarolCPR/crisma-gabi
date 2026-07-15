@@ -161,3 +161,117 @@ export function positionTooltip(chip, tooltip, margin) {
   tooltip.style.left = left + 'px';
   tooltip.style.top = top + 'px';
 }
+
+// ---------------------------------------------------------------------------
+// Diálogos modais acessíveis
+// ---------------------------------------------------------------------------
+
+/**
+ * Retorna os elementos do modal de confirmação.
+ * @returns {{ overlay: HTMLElement, title: HTMLElement, actions: HTMLElement }|null}
+ */
+function getModalElements() {
+  var overlay = document.getElementById('appModal');
+  var title = document.getElementById('modalTitle');
+  var actions = document.getElementById('modalActions');
+  if (!overlay || !title || !actions) return null;
+  return { overlay: overlay, title: title, actions: actions };
+}
+
+/**
+ * Abre o modal com a mensagem e os botões fornecidos.
+ * Retorna uma Promise resolvida com o valor do botão clicado.
+ * Garante foco inicial no primeiro botão e fecha com Escape.
+ *
+ * @param {string} message
+ * @param {Array<{ label: string, value: any, light?: boolean }>} buttons
+ * @returns {Promise<any>}
+ */
+function openModal(message, buttons) {
+  return new Promise(function (resolve) {
+    var els = getModalElements();
+    if (!els) {
+      // fallback de segurança se o DOM não tiver o modal
+      resolve(null);
+      return;
+    }
+
+    els.title.textContent = message;
+    els.actions.innerHTML = '';
+
+    var previouslyFocused = document.activeElement;
+
+    function closeModal(value) {
+      els.overlay.hidden = true;
+      document.removeEventListener('keydown', handleKey);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
+      resolve(value);
+    }
+
+    function handleKey(event) {
+      if (event.key === 'Escape') {
+        closeModal(null);
+      }
+      // Trap focus dentro do modal
+      if (event.key === 'Tab') {
+        var focusable = Array.from(els.actions.querySelectorAll('button'));
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey) {
+          if (document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    }
+
+    buttons.forEach(function (btn) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = btn.label;
+      if (btn.light) button.className = 'modal-btn-light';
+      button.addEventListener('click', function () { closeModal(btn.value); });
+      els.actions.appendChild(button);
+    });
+
+    els.overlay.hidden = false;
+    document.addEventListener('keydown', handleKey);
+
+    var firstBtn = els.actions.querySelector('button');
+    if (firstBtn) firstBtn.focus();
+  });
+}
+
+/**
+ * Exibe um diálogo de confirmação acessível.
+ * @param {string} message
+ * @returns {Promise<boolean>} true se confirmado, false se cancelado.
+ */
+export function showConfirmDialog(message) {
+  return openModal(message, [
+    { label: 'Confirmar', value: true },
+    { label: 'Cancelar', value: false, light: true },
+  ]).then(function (result) { return result === true; });
+}
+
+/**
+ * Exibe o diálogo de opções de importação de backup.
+ * @param {string} message - Mensagem descritiva apresentada ao usuário.
+ * @returns {Promise<'replace'|'merge'|'cancel'>}
+ */
+export function showImportOptionsDialog(message) {
+  return openModal(message, [
+    { label: 'Mesclar', value: 'merge' },
+    { label: 'Substituir', value: 'replace' },
+    { label: 'Cancelar', value: 'cancel', light: true },
+  ]);
+}

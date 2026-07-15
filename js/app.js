@@ -24,6 +24,7 @@ import {
   collectCheckboxes,
   syncCheckboxes,
   positionTooltip,
+  showConfirmDialog,
 } from './ui.js';
 
 /** @type {import('./storage.js').AppData} */
@@ -110,8 +111,9 @@ function save() {
   renderStatistics(appData);
 }
 
-function handleClear() {
-  if (!window.confirm('Deseja limpar os dados desta semana (intenção, virtude e checkboxes)? Seu nome será preservado. Esta ação não pode ser desfeita.')) return;
+async function handleClear() {
+  var confirmed = await showConfirmDialog('Deseja limpar os dados desta semana (intenção, virtude e checkboxes)? Seu nome será preservado. Esta ação não pode ser desfeita.');
+  if (!confirmed) return;
 
   appData = clearActiveWeekData(appData);
 
@@ -130,8 +132,9 @@ function handleOpenWeek(weekId) {
   refreshUi();
 }
 
-function handleDeleteWeek(weekId) {
-  if (!window.confirm('Deseja excluir esta semana do histórico? Esta ação não pode ser desfeita.')) return;
+async function handleDeleteWeek(weekId) {
+  var confirmed = await showConfirmDialog('Deseja excluir esta semana do histórico? Esta ação não pode ser desfeita.');
+  if (!confirmed) return;
 
   appData = deleteWeek(appData, weekId);
   persistCurrentState();
@@ -150,10 +153,11 @@ function handleBackToCurrentWeek() {
   clearStatus();
 }
 
-function handleNewWeek() {
+async function handleNewWeek() {
   var activeWeek = getActiveWeek(appData);
   if (activeWeek && activeWeek.status !== 'done') {
-    if (window.confirm('Deseja concluir a semana atual antes de iniciar uma nova?')) {
+    var shouldConclude = await showConfirmDialog('Deseja concluir a semana atual antes de iniciar uma nova?');
+    if (shouldConclude) {
       appData = markWeekDone(appData, activeWeek.id);
     }
   }
