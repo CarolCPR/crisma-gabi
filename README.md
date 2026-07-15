@@ -49,7 +49,7 @@ Todo o projeto foi desenvolvido para funcionar diretamente no navegador, sem nec
 
 ---
 
-## MVP 2 (Planejado)
+## MVP 2
 
 * Histórico de semanas
 * Criar nova semana
@@ -216,11 +216,11 @@ Caso queira contribuir:
 
 ## MVP 2
 
-* [ ] Histórico de semanas
-* [ ] Nova semana
-* [ ] Backup
-* [ ] Importação
-* [ ] Estatísticas
+* [x] Histórico de semanas
+* [x] Nova semana
+* [x] Backup
+* [x] Importação
+* [x] Estatísticas
 
 ## MVP 3
 
