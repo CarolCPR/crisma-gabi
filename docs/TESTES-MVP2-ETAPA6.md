@@ -157,7 +157,7 @@
 **Passos:**
 1. Clicar em **"Importar backup"**.
 2. Selecionar o arquivo exportado.
-3. Quando perguntado, digitar `1` (substituir) e confirmar.
+3. No modal, clicar em **"Substituir"** e confirmar.
 
 **Resultado esperado:**
 - Todas as semanas do backup são restauradas.
@@ -174,7 +174,7 @@
 **Passos:**
 1. Clicar em **"Importar backup"**.
 2. Selecionar o arquivo.
-3. Quando perguntado, digitar `2` (mesclar).
+3. No modal, clicar em **"Mesclar"**.
 
 **Resultado esperado:**
 - Semanas do backup que não existiam localmente são adicionadas.
@@ -217,7 +217,7 @@
 **Passos:**
 1. Clicar em **"Importar backup"**.
 2. Selecionar um arquivo válido.
-3. Quando perguntado, digitar `0` (cancelar) ou fechar o diálogo.
+3. No modal de opções, clicar em **"Cancelar"** ou pressionar Escape.
 
 **Resultado esperado:**
 - Nenhuma alteração nos dados atuais.

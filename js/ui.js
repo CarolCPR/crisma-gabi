@@ -265,8 +265,10 @@ export function showConfirmDialog(message) {
 
 /**
  * Exibe o diálogo de opções de importação de backup.
+ * Resolve com 'replace', 'merge' ou 'cancel'.
+ * Resolve com null se o modal for fechado via Escape (trate como 'cancel').
  * @param {string} message - Mensagem descritiva apresentada ao usuário.
- * @returns {Promise<'replace'|'merge'|'cancel'>}
+ * @returns {Promise<'replace'|'merge'|'cancel'|null>}
  */
 export function showImportOptionsDialog(message) {
   return openModal(message, [
